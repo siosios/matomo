@@ -306,11 +306,6 @@ class Updater
 
     private function installNewFiles($extractedArchiveDirectory)
     {
-        // Make sure the execute bit is set for this shell script
-        if (!Rules::isBrowserTriggerEnabled()) {
-            @chmod($extractedArchiveDirectory . '/misc/cron/archive.sh', 0755);
-        }
-
         $model = new Model();
 
         // Check if the target directories are writable
