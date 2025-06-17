@@ -441,7 +441,6 @@ class Visit implements VisitInterface
 
         $wasInserted = $this->getModel()->updateVisit($idSite, $idVisit, $valuesToUpdate);
 
-
         if (isset($valuesToUpdate['idvisitor'])) {
 
             if ($this->featureFlagManager->isFeatureActive(UpdateVisitIdInLogTablesOnTrackingRequests::class)) {
