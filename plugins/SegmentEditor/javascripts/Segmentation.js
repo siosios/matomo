@@ -347,7 +347,7 @@ Segmentation = (function($) {
             $(self.target).find(".segmentList li").each(function () {
                 curTitle = $(this).prop('title');
                 $(this).hide();
-                if (curTitle.toLowerCase().indexOf(keyword.toLowerCase()) !== -1) {
+                if (curTitle.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().indexOf(keyword.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase()) !== -1) {
                     $(this).show();
                 }
             });
