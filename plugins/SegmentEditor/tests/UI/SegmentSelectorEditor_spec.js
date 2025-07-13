@@ -151,6 +151,12 @@ describe("SegmentSelectorEditorTest", function () {
         expect(await page.screenshotSelector(selectorsToCapture)).to.matchImage('saved');
     });
 
+    it("should find the segment also when searching with diacritics", async function() {
+        await page.evaluate(() => $('.segmentationContainer .segmentFilter').val('ségmÊnt').trigger('keyup'));
+        await page.waitForTimeout(500); // wait for search to be applied
+        expect(await page.screenshotSelector(selectorsToCapture)).to.matchImage('searched');
+    });
+
     it("should correctly load the new segment's details when the new segment is edited", async function() {
         await page.click('.segmentList li[data-idsegment="4"] .editSegment');
         await page.waitForNetworkIdle();
