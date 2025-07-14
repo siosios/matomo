@@ -390,7 +390,7 @@ Segmentation = (function($) {
                     // for each visible segmentationContainer -> trigger click event to close and kill scrollpane - very important !
                     closeAllOpenLists();
                     self.target.closest('.segmentEditorPanel').addClass('expanded');
-                    self.target.find('.segmentFilter').val(self.translations['General_Search']).trigger('keyup');
+                    self.target.find('.segmentFilter').val('').trigger('keyup');
                 }
             });
 
@@ -448,26 +448,11 @@ Segmentation = (function($) {
 
             // attach event that will clear segment list filtering input after clicking x
             self.target.on('click', ".segmentFilterContainer span", function (e) {
-                $(e.target).parent().find(".segmentFilter").val(self.translations['General_Search']).trigger('keyup');
-            });
-
-            self.target.on('blur', ".segmentFilter", function (e) {
-                if ($(e.target).parent().find(".segmentFilter").val() == "") {
-                    $(e.target).parent().find(".segmentFilter").val(self.translations['General_Search'])
-                }
-            });
-
-            self.target.on('click', ".segmentFilter", function (e) {
-                if ($(e.target).val() == self.translations['General_Search']) {
-                    $(e.target).val("");
-                }
+                $(e.target).parent().find('.segmentFilter').val('').trigger('keyup');
             });
 
             self.target.on('keyup', ".segmentFilter", function (e) {
                 var search = $(e.currentTarget).val();
-                if (search == self.translations['General_Search']) {
-                    search = "";
-                }
 
                 if (search.length >= 2) {
                     clearTimeout(self.filterTimer);
