@@ -85,6 +85,7 @@ declare global {
     redirect(params?: any);
     htmlDecode(encoded: string): string;
     htmlEntities(value: string): string;
+    normalize(value: string): string;
     modalConfirm(element: JQuery|HTMLElement|string, callbacks?: ModalConfirmCallbacks, options?: ModalConfirmOptions);
     isReportingPage(): boolean;
     setMarginLeftToBeInViewport(elementToPosition: JQuery|Element|string): void;

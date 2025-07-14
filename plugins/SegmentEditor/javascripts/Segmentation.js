@@ -347,7 +347,7 @@ Segmentation = (function($) {
             $(self.target).find(".segmentList li").each(function () {
                 curTitle = $(this).prop('title');
                 $(this).hide();
-                if (curTitle.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().indexOf(keyword.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase()) !== -1) {
+                if (piwikHelper.normalize(curTitle).indexOf(piwikHelper.normalize(keyword)) !== -1) {
                     $(this).show();
                 }
             });
@@ -561,22 +561,6 @@ Segmentation = (function($) {
                 openEditForm(segment);
             }
         }
-
-        var normalizeSearchString = function(search){
-            search = search.replace(/^\s+|\s+$/g, ''); // trim
-            search = search.toLowerCase();
-            // remove accents, swap ñ for n, etc
-            var from = "àáäâèéëêìíïîòóöôùúüûñç·/_,:;";
-            var to   = "aaaaeeeeiiiioooouuuunc------";
-            for (var i=0, l=from.length ; i<l ; i++) {
-                search = search.replace(new RegExp(from.charAt(i), 'g'), to.charAt(i));
-            }
-
-            search = search.replace(/[^a-z0-9 -]/g, '') // remove invalid chars
-                .replace(/\s+/g, '_') // collapse whitespace and replace by underscore
-                .replace(/-+/g, '-'); // collapse dashes
-            return search;
-        };
 
         // Mode = 'new' or 'edit'
         var addForm = function(mode, segment){
