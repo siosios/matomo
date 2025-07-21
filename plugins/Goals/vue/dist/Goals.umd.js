@@ -206,7 +206,7 @@ external_CoreHome_["Matomo"].on('Matomo.processDynamicHtml', $element => {
 // EXTERNAL MODULE: external {"commonjs":"vue","commonjs2":"vue","root":"Vue"}
 var external_commonjs_vue_commonjs2_vue_root_Vue_ = __webpack_require__("8bbf");
 
-// CONCATENATED MODULE: ./node_modules/@vue/cli-plugin-babel/node_modules/cache-loader/dist/cjs.js??ref--13-0!./node_modules/@vue/cli-plugin-babel/node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib!./node_modules/@vue/cli-service/node_modules/vue-loader-v16/dist/templateLoader.js??ref--6!./node_modules/@vue/cli-service/node_modules/cache-loader/dist/cjs.js??ref--1-0!./node_modules/@vue/cli-service/node_modules/vue-loader-v16/dist??ref--1-1!./plugins/Goals/vue/src/ManageGoals/ManageGoals.vue?vue&type=template&id=fd166ff8
+// CONCATENATED MODULE: ./node_modules/@vue/cli-plugin-babel/node_modules/cache-loader/dist/cjs.js??ref--13-0!./node_modules/@vue/cli-plugin-babel/node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib!./node_modules/@vue/cli-service/node_modules/vue-loader-v16/dist/templateLoader.js??ref--6!./node_modules/@vue/cli-service/node_modules/cache-loader/dist/cjs.js??ref--1-0!./node_modules/@vue/cli-service/node_modules/vue-loader-v16/dist??ref--1-1!./plugins/Goals/vue/src/ManageGoals/ManageGoals.vue?vue&type=template&id=7612ba2e
 
 const _hoisted_1 = {
   class: "manageGoals"
@@ -350,14 +350,16 @@ const _hoisted_59 = /*#__PURE__*/Object(external_commonjs_vue_commonjs2_vue_root
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   var _ctx$goalToDelete;
   const _component_ActivityIndicator = Object(external_commonjs_vue_commonjs2_vue_root_Vue_["resolveComponent"])("ActivityIndicator");
+  const _component_EntityDuplicatorAction = Object(external_commonjs_vue_commonjs2_vue_root_Vue_["resolveComponent"])("EntityDuplicatorAction");
   const _component_ContentBlock = Object(external_commonjs_vue_commonjs2_vue_root_Vue_["resolveComponent"])("ContentBlock");
   const _component_Field = Object(external_commonjs_vue_commonjs2_vue_root_Vue_["resolveComponent"])("Field");
   const _component_Alert = Object(external_commonjs_vue_commonjs2_vue_root_Vue_["resolveComponent"])("Alert");
   const _component_VueEntryContainer = Object(external_commonjs_vue_commonjs2_vue_root_Vue_["resolveComponent"])("VueEntryContainer");
   const _component_SaveButton = Object(external_commonjs_vue_commonjs2_vue_root_Vue_["resolveComponent"])("SaveButton");
+  const _component_EntityDuplicatorModal = Object(external_commonjs_vue_commonjs2_vue_root_Vue_["resolveComponent"])("EntityDuplicatorModal");
   const _directive_content_table = Object(external_commonjs_vue_commonjs2_vue_root_Vue_["resolveDirective"])("content-table");
   const _directive_form = Object(external_commonjs_vue_commonjs2_vue_root_Vue_["resolveDirective"])("form");
-  return Object(external_commonjs_vue_commonjs2_vue_root_Vue_["openBlock"])(), Object(external_commonjs_vue_commonjs2_vue_root_Vue_["createElementBlock"])("div", _hoisted_1, [Object(external_commonjs_vue_commonjs2_vue_root_Vue_["withDirectives"])(Object(external_commonjs_vue_commonjs2_vue_root_Vue_["createElementVNode"])("div", null, [Object(external_commonjs_vue_commonjs2_vue_root_Vue_["withDirectives"])(Object(external_commonjs_vue_commonjs2_vue_root_Vue_["createElementVNode"])("div", _hoisted_2, [Object(external_commonjs_vue_commonjs2_vue_root_Vue_["createVNode"])(_component_ContentBlock, {
+  return Object(external_commonjs_vue_commonjs2_vue_root_Vue_["openBlock"])(), Object(external_commonjs_vue_commonjs2_vue_root_Vue_["createElementBlock"])(external_commonjs_vue_commonjs2_vue_root_Vue_["Fragment"], null, [Object(external_commonjs_vue_commonjs2_vue_root_Vue_["createElementVNode"])("div", _hoisted_1, [Object(external_commonjs_vue_commonjs2_vue_root_Vue_["withDirectives"])(Object(external_commonjs_vue_commonjs2_vue_root_Vue_["createElementVNode"])("div", null, [Object(external_commonjs_vue_commonjs2_vue_root_Vue_["withDirectives"])(Object(external_commonjs_vue_commonjs2_vue_root_Vue_["createElementVNode"])("div", _hoisted_2, [Object(external_commonjs_vue_commonjs2_vue_root_Vue_["createVNode"])(_component_ContentBlock, {
     "content-title": _ctx.translate('Goals_ManageGoals')
   }, {
     default: Object(external_commonjs_vue_commonjs2_vue_root_Vue_["withCtx"])(() => [Object(external_commonjs_vue_commonjs2_vue_root_Vue_["createVNode"])(_component_ActivityIndicator, {
@@ -387,7 +389,14 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
         onClick: $event => _ctx.deleteGoal(goal.idgoal),
         class: "table-action icon-delete",
         title: _ctx.translate('General_Delete')
-      }, null, 8, _hoisted_25)) : Object(external_commonjs_vue_commonjs2_vue_root_Vue_["createCommentVNode"])("", true)])) : Object(external_commonjs_vue_commonjs2_vue_root_Vue_["createCommentVNode"])("", true)], 8, _hoisted_16);
+      }, null, 8, _hoisted_25)) : Object(external_commonjs_vue_commonjs2_vue_root_Vue_["createCommentVNode"])("", true), Object(external_commonjs_vue_commonjs2_vue_root_Vue_["createVNode"])(_component_EntityDuplicatorAction, {
+        actionFormData: {
+          idGoal: goal.idgoal
+        },
+        isActionVisible: _ctx.showDuplicatorAction,
+        isActionEnabled: _ctx.enableDuplicatorAction,
+        modalStore: _ctx.entityDuplicatorStore
+      }, null, 8, ["actionFormData", "isActionVisible", "isActionEnabled", "modalStore"])])) : Object(external_commonjs_vue_commonjs2_vue_root_Vue_["createCommentVNode"])("", true)], 8, _hoisted_16);
     }), 128))])])), [[_directive_content_table]]), _ctx.userCanEditGoals && !_ctx.onlyShowAddNewGoal ? (Object(external_commonjs_vue_commonjs2_vue_root_Vue_["openBlock"])(), Object(external_commonjs_vue_commonjs2_vue_root_Vue_["createElementBlock"])("div", _hoisted_26, [Object(external_commonjs_vue_commonjs2_vue_root_Vue_["createElementVNode"])("button", {
       id: "add-goal",
       onClick: _cache[0] || (_cache[0] = $event => _ctx.createGoal())
@@ -524,9 +533,13 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
       innerHTML: _ctx.$sanitize(_ctx.cancelText)
     }, null, 8, _hoisted_58), [[external_commonjs_vue_commonjs2_vue_root_Vue_["vShow"], _ctx.showEditGoal]])])) : Object(external_commonjs_vue_commonjs2_vue_root_Vue_["createCommentVNode"])("", true)])), [[_directive_form]])]),
     _: 1
-  }, 8, ["content-title"])], 512), [[external_commonjs_vue_commonjs2_vue_root_Vue_["vShow"], _ctx.showEditGoal]])], 512), [[external_commonjs_vue_commonjs2_vue_root_Vue_["vShow"], _ctx.userCanEditGoals]]), _hoisted_59]);
+  }, 8, ["content-title"])], 512), [[external_commonjs_vue_commonjs2_vue_root_Vue_["vShow"], _ctx.showEditGoal]])], 512), [[external_commonjs_vue_commonjs2_vue_root_Vue_["vShow"], _ctx.userCanEditGoals]]), _hoisted_59]), Object(external_commonjs_vue_commonjs2_vue_root_Vue_["createVNode"])(_component_EntityDuplicatorModal, {
+    modalStore: _ctx.entityDuplicatorStore,
+    onDuplicationSuccessful: _ctx.handleSuccess,
+    onDuplicationFailed: _ctx.handleFailure
+  }, null, 8, ["modalStore", "onDuplicationSuccessful", "onDuplicationFailed"])], 64);
 }
-// CONCATENATED MODULE: ./plugins/Goals/vue/src/ManageGoals/ManageGoals.vue?vue&type=template&id=fd166ff8
+// CONCATENATED MODULE: ./plugins/Goals/vue/src/ManageGoals/ManageGoals.vue?vue&type=template&id=7612ba2e
 
 // EXTERNAL MODULE: external "CorePluginsAdmin"
 var external_CorePluginsAdmin_ = __webpack_require__("a5a2");
@@ -555,6 +568,13 @@ class ManageGoals_store_ManageGoalsStore {
 
 
 
+const EntityDuplicatorAction = Object(external_CoreHome_["useExternalPluginComponent"])('CoreHome', 'EntityDuplicatorAction');
+const EntityDuplicatorModal = Object(external_CoreHome_["useExternalPluginComponent"])('CoreHome', 'EntityDuplicatorModal');
+let buildEntityDuplicatorStore = undefined;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+Object(external_CoreHome_["importPluginUmd"])('CoreHome').then(module => {
+  buildEntityDuplicatorStore = module === null || module === void 0 ? void 0 : module.buildEntityDuplicatorStore;
+});
 function ambiguousBoolToInt(n) {
   return !!n && n !== '0' ? 1 : 0;
 }
@@ -592,10 +612,15 @@ function ambiguousBoolToInt(n) {
       apiMethod: '',
       submitText: '',
       goalToDelete: null,
-      addEditTableComponent: false
+      addEditTableComponent: false,
+      showDuplicatorAction: true,
+      enableDuplicatorAction: true,
+      entityDuplicatorStore: typeof buildEntityDuplicatorStore !== 'undefined' ? buildEntityDuplicatorStore('goal', 'General_Goal') : undefined
     };
   },
   components: {
+    EntityDuplicatorModal,
+    EntityDuplicatorAction,
     SaveButton: external_CorePluginsAdmin_["SaveButton"],
     ContentBlock: external_CoreHome_["ContentBlock"],
     ActivityIndicator: external_CoreHome_["ActivityIndicator"],
@@ -621,6 +646,12 @@ function ambiguousBoolToInt(n) {
     } else {
       this.showListOfReports();
     }
+    external_CoreHome_["Matomo"].on('EntityDuplicator:validateFormFields', validationData => {
+      var _validationData$formV;
+      if (!((_validationData$formV = validationData.formValues) !== null && _validationData$formV !== void 0 && (_validationData$formV = _validationData$formV.requestData) !== null && _validationData$formV !== void 0 && _validationData$formV.idGoal)) {
+        validationData.errorMessages.push(Object(external_CoreHome_["translate"])('General_Required', 'idGoal'));
+      }
+    });
   },
   methods: {
     scrollToTop() {
@@ -781,6 +812,21 @@ function ambiguousBoolToInt(n) {
     },
     goalNameChanged() {
       external_CoreHome_["Matomo"].postEvent('Goals.goalNameChanged', this.goal.name);
+    },
+    handleFailure() {
+      // intentionally left blank
+    },
+    handleSuccess(response) {
+      setTimeout(() => {
+        const message = response.isDuplicationSuccessful ? response.successMessage : response.errorMessage;
+        const notificationInstanceId = external_CoreHome_["NotificationsStore"].show({
+          message,
+          context: response.isDuplicationSuccessful ? 'success' : 'error',
+          type: 'toast',
+          id: 'goalDuplicationResult'
+        });
+        external_CoreHome_["NotificationsStore"].scrollToNotification(notificationInstanceId);
+      });
     }
   },
   computed: {

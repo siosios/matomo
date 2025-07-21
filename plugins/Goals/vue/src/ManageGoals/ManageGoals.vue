@@ -96,6 +96,12 @@
                     class="table-action icon-delete"
                     :title="translate('General_Delete')"
                   ></button>
+                  <EntityDuplicatorAction
+                    :actionFormData="{idGoal: goal.idgoal}"
+                    :isActionVisible="showDuplicatorAction"
+                    :isActionEnabled="enableDuplicatorAction"
+                    :modalStore="entityDuplicatorStore"
+                  />
                 </td>
               </tr>
             </tbody>
@@ -374,6 +380,11 @@
 
     <a id='bottom'></a>
   </div>
+  <EntityDuplicatorModal
+    :modalStore="entityDuplicatorStore"
+    @duplicationSuccessful="handleSuccess"
+    @duplicationFailed="handleFailure"
+  />
 </template>
 
 <script lang="ts">
@@ -390,7 +401,15 @@ import {
   Alert,
   ReportingMenuStore,
   VueEntryContainer,
+  NotificationsStore,
   externalLink,
+  useExternalPluginComponent,
+  importPluginUmd,
+} from 'CoreHome';
+import type {
+  EntityDuplicatorStore,
+  buildEntityDuplicatorStore as BuildFunctionType,
+  DuplicateRequestResponse,
 } from 'CoreHome';
 import {
   Form,
@@ -399,6 +418,16 @@ import {
 } from 'CorePluginsAdmin';
 import Goal from '../Goal';
 import ManageGoalsStore from './ManageGoals.store';
+
+const EntityDuplicatorAction = useExternalPluginComponent('CoreHome', 'EntityDuplicatorAction');
+const EntityDuplicatorModal = useExternalPluginComponent('CoreHome', 'EntityDuplicatorModal');
+
+let buildEntityDuplicatorStore: typeof BuildFunctionType | undefined = undefined;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+importPluginUmd('CoreHome').then((module: any) => {
+  buildEntityDuplicatorStore = module?.buildEntityDuplicatorStore;
+});
 
 interface ManageGoalsState {
   showEditGoal: boolean;
@@ -411,6 +440,9 @@ interface ManageGoalsState {
   submitText: string;
   goalToDelete: Goal|null;
   addEditTableComponent: boolean;
+  showDuplicatorAction: boolean;
+  enableDuplicatorAction: boolean;
+  entityDuplicatorStore?: EntityDuplicatorStore;
 }
 
 function ambiguousBoolToInt(n: string|number|boolean): 1|0 {
@@ -452,9 +484,16 @@ export default defineComponent({
       submitText: '',
       goalToDelete: null,
       addEditTableComponent: false,
+      showDuplicatorAction: true,
+      enableDuplicatorAction: true,
+      entityDuplicatorStore: typeof buildEntityDuplicatorStore !== 'undefined'
+        ? buildEntityDuplicatorStore('goal', 'General_Goal')
+        : undefined,
     };
   },
   components: {
+    EntityDuplicatorModal,
+    EntityDuplicatorAction,
     SaveButton,
     ContentBlock,
     ActivityIndicator,
@@ -480,6 +519,12 @@ export default defineComponent({
     } else {
       this.showListOfReports();
     }
+
+    Matomo.on('EntityDuplicator:validateFormFields', (validationData: QueryParameters) => {
+      if (!validationData.formValues?.requestData?.idGoal) {
+        validationData.errorMessages.push(translate('General_Required', 'idGoal'));
+      }
+    });
   },
   methods: {
     scrollToTop() {
@@ -695,6 +740,26 @@ export default defineComponent({
     },
     goalNameChanged() {
       Matomo.postEvent('Goals.goalNameChanged', this.goal.name);
+    },
+    handleFailure() {
+      // intentionally left blank
+    },
+    handleSuccess(response: DuplicateRequestResponse) {
+      setTimeout(() => {
+        const message = (
+          response.isDuplicationSuccessful
+            ? response.successMessage
+            : response.errorMessage
+        ) as string;
+
+        const notificationInstanceId = NotificationsStore.show({
+          message,
+          context: response.isDuplicationSuccessful ? 'success' : 'error',
+          type: 'toast',
+          id: 'goalDuplicationResult',
+        });
+        NotificationsStore.scrollToNotification(notificationInstanceId);
+      });
     },
   },
   computed: {
