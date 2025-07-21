@@ -7,8 +7,6 @@
 
 import { reactive } from 'vue';
 import { translateOrDefault } from '../translate';
-import Matomo from '../Matomo/Matomo';
-import MatomoUrl from '../MatomoUrl/MatomoUrl';
 
 interface EntityDuplicatorState {
   /**
@@ -89,25 +87,6 @@ export class EntityDuplicatorStore {
 
   disableWatchSuppression(): void {
     this.state.isWatchSuppressed = false;
-  }
-
-  getFormValues(idDestinationSites?: number|string|[]): Record<string, unknown> {
-    const idDestinationSitesArray = Array.isArray(idDestinationSites)
-      ? idDestinationSites : [] as number[];
-    if (idDestinationSites && !Array.isArray(idDestinationSites)) {
-      idDestinationSitesArray.push(idDestinationSites as number);
-    }
-    return {
-      module: 'CoreHome',
-      action: 'duplicateEntity',
-      idSite: Matomo.idSite || MatomoUrl.parsed.value.idSite,
-      idDestinationSites: idDestinationSitesArray,
-      entityTypeName: this.state.duplicateEntityType,
-      requestData: {
-        ...this.state.commonFormData,
-        ...this.state.entityFormData,
-      },
-    } as Record<string, unknown>;
   }
 
   /**

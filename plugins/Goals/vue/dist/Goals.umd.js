@@ -206,7 +206,7 @@ external_CoreHome_["Matomo"].on('Matomo.processDynamicHtml', $element => {
 // EXTERNAL MODULE: external {"commonjs":"vue","commonjs2":"vue","root":"Vue"}
 var external_commonjs_vue_commonjs2_vue_root_Vue_ = __webpack_require__("8bbf");
 
-// CONCATENATED MODULE: ./node_modules/@vue/cli-plugin-babel/node_modules/cache-loader/dist/cjs.js??ref--13-0!./node_modules/@vue/cli-plugin-babel/node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib!./node_modules/@vue/cli-service/node_modules/vue-loader-v16/dist/templateLoader.js??ref--6!./node_modules/@vue/cli-service/node_modules/cache-loader/dist/cjs.js??ref--1-0!./node_modules/@vue/cli-service/node_modules/vue-loader-v16/dist??ref--1-1!./plugins/Goals/vue/src/ManageGoals/ManageGoals.vue?vue&type=template&id=7612ba2e
+// CONCATENATED MODULE: ./node_modules/@vue/cli-plugin-babel/node_modules/cache-loader/dist/cjs.js??ref--13-0!./node_modules/@vue/cli-plugin-babel/node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib!./node_modules/@vue/cli-service/node_modules/vue-loader-v16/dist/templateLoader.js??ref--6!./node_modules/@vue/cli-service/node_modules/cache-loader/dist/cjs.js??ref--1-0!./node_modules/@vue/cli-service/node_modules/vue-loader-v16/dist??ref--1-1!./plugins/Goals/vue/src/ManageGoals/ManageGoals.vue?vue&type=template&id=23f598c0
 
 const _hoisted_1 = {
   class: "manageGoals"
@@ -535,11 +535,12 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     _: 1
   }, 8, ["content-title"])], 512), [[external_commonjs_vue_commonjs2_vue_root_Vue_["vShow"], _ctx.showEditGoal]])], 512), [[external_commonjs_vue_commonjs2_vue_root_Vue_["vShow"], _ctx.userCanEditGoals]]), _hoisted_59]), Object(external_commonjs_vue_commonjs2_vue_root_Vue_["createVNode"])(_component_EntityDuplicatorModal, {
     modalStore: _ctx.entityDuplicatorStore,
+    adapter: _ctx.goalDuplicatorAdapter,
     onDuplicationSuccessful: _ctx.handleSuccess,
     onDuplicationFailed: _ctx.handleFailure
-  }, null, 8, ["modalStore", "onDuplicationSuccessful", "onDuplicationFailed"])], 64);
+  }, null, 8, ["modalStore", "adapter", "onDuplicationSuccessful", "onDuplicationFailed"])], 64);
 }
-// CONCATENATED MODULE: ./plugins/Goals/vue/src/ManageGoals/ManageGoals.vue?vue&type=template&id=7612ba2e
+// CONCATENATED MODULE: ./plugins/Goals/vue/src/ManageGoals/ManageGoals.vue?vue&type=template&id=23f598c0
 
 // EXTERNAL MODULE: external "CorePluginsAdmin"
 var external_CorePluginsAdmin_ = __webpack_require__("a5a2");
@@ -563,7 +564,56 @@ class ManageGoals_store_ManageGoalsStore {
   }
 }
 /* harmony default export */ var ManageGoals_store = (new ManageGoals_store_ManageGoalsStore());
+// CONCATENATED MODULE: ./plugins/Goals/vue/src/ManageGoals/GoalDuplicatorAdapter.ts
+/*!
+ * Matomo - free/libre analytics platform
+ *
+ * @link    https://matomo.org
+ * @license https://www.gnu.org/licenses/gpl-3.0.html GPL v3 or later
+ */
+
+class GoalDuplicatorAdapter_GoalDuplicatorAdapter {
+  validateFormFields(formValues, idSite) {
+    const errorMessages = [];
+    if (!idSite) {
+      errorMessages.push(Object(external_CoreHome_["translate"])('General_Required', 'idSite'));
+    }
+    // Check if idGoal is present
+    if (!(formValues !== null && formValues !== void 0 && formValues.idGoal)) {
+      errorMessages.push(Object(external_CoreHome_["translate"])('General_Required', 'idGoal'));
+    }
+    return {
+      errorMessages,
+      isValid: errorMessages.length === 0
+    };
+  }
+  prepareApiParams(formValues, idSite) {
+    // idSite is validated with validateFormFields
+    const idDestinationSites = [idSite];
+    return {
+      module: 'CoreHome',
+      action: 'duplicateEntity',
+      idSite: external_CoreHome_["Matomo"].idSite || external_CoreHome_["MatomoUrl"].parsed.value.idSite,
+      entityTypeName: 'goal',
+      requestData: formValues,
+      idDestinationSites
+    };
+  }
+  async submitRequest(params) {
+    const ajax = new external_CoreHome_["AjaxHelper"]();
+    // Remove the unnecessary default parameters
+    ajax.removeDefaultParameter('date');
+    ajax.removeDefaultParameter('period');
+    ajax.removeDefaultParameter('segment');
+    // Include token in POST body for security
+    ajax.withTokenInUrl();
+    ajax.addParams(params, 'POST');
+    ajax.setFormat('json');
+    return ajax.send();
+  }
+}
 // CONCATENATED MODULE: ./node_modules/@vue/cli-plugin-typescript/node_modules/cache-loader/dist/cjs.js??ref--15-0!./node_modules/babel-loader/lib!./node_modules/@vue/cli-plugin-typescript/node_modules/ts-loader??ref--15-2!./node_modules/@vue/cli-service/node_modules/cache-loader/dist/cjs.js??ref--1-0!./node_modules/@vue/cli-service/node_modules/vue-loader-v16/dist??ref--1-1!./plugins/Goals/vue/src/ManageGoals/ManageGoals.vue?vue&type=script&lang=ts
+
 
 
 
@@ -615,7 +665,8 @@ function ambiguousBoolToInt(n) {
       addEditTableComponent: false,
       showDuplicatorAction: true,
       enableDuplicatorAction: true,
-      entityDuplicatorStore: typeof buildEntityDuplicatorStore !== 'undefined' ? buildEntityDuplicatorStore('goal', 'General_Goal') : undefined
+      entityDuplicatorStore: typeof buildEntityDuplicatorStore !== 'undefined' ? buildEntityDuplicatorStore('goal', 'General_Goal') : undefined,
+      goalDuplicatorAdapter: new GoalDuplicatorAdapter_GoalDuplicatorAdapter()
     };
   },
   components: {
@@ -646,12 +697,6 @@ function ambiguousBoolToInt(n) {
     } else {
       this.showListOfReports();
     }
-    external_CoreHome_["Matomo"].on('EntityDuplicator:validateFormFields', validationData => {
-      var _validationData$formV;
-      if (!((_validationData$formV = validationData.formValues) !== null && _validationData$formV !== void 0 && (_validationData$formV = _validationData$formV.requestData) !== null && _validationData$formV !== void 0 && _validationData$formV.idGoal)) {
-        validationData.errorMessages.push(Object(external_CoreHome_["translate"])('General_Required', 'idGoal'));
-      }
-    });
   },
   methods: {
     scrollToTop() {

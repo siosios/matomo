@@ -382,6 +382,7 @@
   </div>
   <EntityDuplicatorModal
     :modalStore="entityDuplicatorStore"
+    :adapter="goalDuplicatorAdapter"
     @duplicationSuccessful="handleSuccess"
     @duplicationFailed="handleFailure"
   />
@@ -418,6 +419,7 @@ import {
 } from 'CorePluginsAdmin';
 import Goal from '../Goal';
 import ManageGoalsStore from './ManageGoals.store';
+import { GoalDuplicatorAdapter } from './GoalDuplicatorAdapter';
 
 const EntityDuplicatorAction = useExternalPluginComponent('CoreHome', 'EntityDuplicatorAction');
 const EntityDuplicatorModal = useExternalPluginComponent('CoreHome', 'EntityDuplicatorModal');
@@ -443,6 +445,7 @@ interface ManageGoalsState {
   showDuplicatorAction: boolean;
   enableDuplicatorAction: boolean;
   entityDuplicatorStore?: EntityDuplicatorStore;
+  goalDuplicatorAdapter: GoalDuplicatorAdapter;
 }
 
 function ambiguousBoolToInt(n: string|number|boolean): 1|0 {
@@ -489,6 +492,7 @@ export default defineComponent({
       entityDuplicatorStore: typeof buildEntityDuplicatorStore !== 'undefined'
         ? buildEntityDuplicatorStore('goal', 'General_Goal')
         : undefined,
+      goalDuplicatorAdapter: new GoalDuplicatorAdapter(),
     };
   },
   components: {
@@ -519,12 +523,6 @@ export default defineComponent({
     } else {
       this.showListOfReports();
     }
-
-    Matomo.on('EntityDuplicator:validateFormFields', (validationData: QueryParameters) => {
-      if (!validationData.formValues?.requestData?.idGoal) {
-        validationData.errorMessages.push(translate('General_Required', 'idGoal'));
-      }
-    });
   },
   methods: {
     scrollToTop() {

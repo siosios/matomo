@@ -87,12 +87,11 @@ import {
 } from 'vue';
 import useExternalPluginComponent from '../useExternalPluginComponent';
 import SiteRef from '../SiteSelector/SiteRef';
-import Matomo from '../Matomo/Matomo';
 import { translate } from '../translate';
 import { externalLink } from '../externalLink';
-import AjaxHelper from '../AjaxHelper/AjaxHelper';
 import { EntityDuplicatorStore } from './EntityDuplicatorStore';
 import { DuplicateRequestResponse } from './types';
+import { EntityDuplicatorAdapter } from './EntityDuplicatorAdapter';
 import MatomoLoader from '../MatomoLoader/MatomoLoader';
 
 // async since we're referencing a recursive component
@@ -124,6 +123,13 @@ export default defineComponent({
      */
     modalStore: {
       type: Object as PropType<EntityDuplicatorStore>,
+      required: true,
+    },
+    /**
+     * The adapter that handles validation and submission logic
+     */
+    adapter: {
+      type: Object as PropType<EntityDuplicatorAdapter>,
       required: true,
     },
     /**
@@ -208,21 +214,23 @@ export default defineComponent({
         return;
       }
 
-      // Actually POST the API call
-      const ajax = new AjaxHelper();
-      // Remove the unnecessary default parameters
-      ajax.removeDefaultParameter('date');
-      ajax.removeDefaultParameter('period');
-      ajax.removeDefaultParameter('segment');
-      // Include token in POST body so that it can be used for the security check instead of a nonce
-      ajax.withTokenInUrl();
-      ajax.addParams(this.modalStore.getFormValues(this.site?.id), 'POST');
-      ajax.setFormat('json');
-      ajax.send().then((response: DuplicateRequestResponse) => {
+      // Use adapter to prepare API parameters
+      const params = this.adapter.prepareApiParams(
+        this.modalStore.state.entityFormData,
+        this.site?.id,
+      );
+
+      // Use adapter to submit the request
+      this.adapter.submitRequest(params).then((response: DuplicateRequestResponse) => {
         // If the response was invalid or unsuccessful, emit the failure and show an error message
         if (!response || !response.isDuplicationSuccessful) {
-          this.emitFailureAndSetErrorMessage();
+          this.emitFailureAndSetErrorMessage(response);
           return;
+        }
+
+        // Call adapter's onSuccess if defined
+        if (this.adapter.onSuccess) {
+          this.adapter.onSuccess(response);
         }
 
         // Emit success so parent can perform desired actions like reload the data store or page
@@ -231,6 +239,12 @@ export default defineComponent({
         this.closeModal();
       }).catch((error) => {
         this.emitFailureAndSetErrorMessage();
+
+        // Call adapter's onFailure if defined
+        if (this.adapter.onFailure) {
+          this.adapter.onFailure(error);
+        }
+
         console.log('Unexpected server error during request.', error);
       }).finally(() => {
         this.hasBeenSubmitted = false;
@@ -239,22 +253,20 @@ export default defineComponent({
     validateFormFields() {
       this.isValidated = true;
       this.duplicationErrors = [];
+
       // Don't bother if the modal isn't visible
       if (!this.modalStore.state.isModalVisible) {
         return;
       }
 
-      const validationData: QueryParameters = {
-        formValues: this.modalStore.getFormValues(this.site?.id),
-        errorMessages: [] as string[],
-      };
-      Matomo.postEvent('EntityDuplicator:validateFormFields', validationData);
-      if (
-        validationData
-        && Array.isArray(validationData.errorMessages)
-        && validationData.errorMessages.length > 0
-      ) {
-        this.duplicationErrors = validationData.errorMessages;
+      // Use adapter for validation
+      const validationResult = this.adapter.validateFormFields(
+        this.modalStore.state.entityFormData,
+        this.site?.id,
+      );
+
+      if (!validationResult.isValid && validationResult.errorMessages.length > 0) {
+        this.duplicationErrors = validationResult.errorMessages;
       }
     },
     onSiteChange() {
