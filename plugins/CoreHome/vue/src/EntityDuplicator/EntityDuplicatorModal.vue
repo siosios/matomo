@@ -9,7 +9,7 @@
     :class="{
       'modal': true,
       'entity-duplicator-modal': true,
-      'slot-configured': $slots.default
+      'slot-configured': true,
     }"
     ref="root">
     <div class="main-duplicator-modal-content" v-show="isModalVisible">
@@ -28,21 +28,11 @@
       </template>
 
       <template v-else>
-        <div class="modal-sub-header" v-if="!hideSiteSelector">
+        <div class="modal-sub-header">
           <p>
             {{ getDuplicateDescription }}
             <span v-if="descriptionLearnMoreLink" v-html="$sanitize(getLearnMoreLink)"></span>
           </p>
-          <Field
-            uicontrol="site"
-            name="siteSelector"
-            :title="translate('CoreHome_ChooseWebsite')"
-            v-model="site"
-            :ui-control-attributes="{
-              sitesWithAtLeastWriteAccess: true,
-              siteTypesToExclude: ['rollup'],
-            }"
-          />
         </div>
         <div class="modal-content">
           <div v-form class="modal-inputs">
@@ -86,7 +76,6 @@ import {
   PropType,
 } from 'vue';
 import useExternalPluginComponent from '../useExternalPluginComponent';
-import SiteRef from '../SiteSelector/SiteRef';
 import { translate } from '../translate';
 import { externalLink } from '../externalLink';
 import { EntityDuplicatorStore } from './EntityDuplicatorStore';
@@ -95,17 +84,13 @@ import { EntityDuplicatorAdapter } from './EntityDuplicatorAdapter';
 import MatomoLoader from '../MatomoLoader/MatomoLoader';
 
 // async since we're referencing a recursive component
-const Field = useExternalPluginComponent('CorePluginsAdmin', 'Field');
 const Form = useExternalPluginComponent('CorePluginsAdmin', 'Form');
-
 const { $ } = window;
 
 interface EntityDuplicatorState {
   isLoading: boolean;
   isValidated: boolean;
   duplicationErrors: string[];
-  site: SiteRef|null;
-  hasSiteBeenInitialised: boolean;
   hasBeenSubmitted: boolean;
 }
 
@@ -115,7 +100,6 @@ export default defineComponent({
   },
   components: {
     MatomoLoader,
-    Field,
   },
   props: {
     /**
@@ -133,13 +117,6 @@ export default defineComponent({
       required: true,
     },
     /**
-     * Option to hide the site selector when it's not needed.
-     */
-    hideSiteSelector: {
-      type: Boolean,
-      default: false,
-    },
-    /**
      * Optional "Learn more." link to append to the end of the description text if provided.
      */
     descriptionLearnMoreLink: {
@@ -152,8 +129,6 @@ export default defineComponent({
       isLoading: true,
       isValidated: false,
       duplicationErrors: [],
-      site: null,
-      hasSiteBeenInitialised: false,
       hasBeenSubmitted: false,
     };
   },
@@ -174,9 +149,6 @@ export default defineComponent({
       // TODO - determine the best indication that loading is done
       this.isLoading = false;
     },
-    site() {
-      this.onSiteChange();
-    },
   },
   methods: {
     closeModal() {
@@ -186,11 +158,9 @@ export default defineComponent({
     },
     resetModal() {
       this.modalStore.hideModal();
-      this.site = null;
       this.isLoading = true;
       this.isValidated = false;
       this.duplicationErrors = [];
-      this.hasSiteBeenInitialised = false;
       this.hasBeenSubmitted = false;
     },
     showModal() {
@@ -215,10 +185,7 @@ export default defineComponent({
       }
 
       // Use adapter to prepare API parameters
-      const params = this.adapter.prepareApiParams(
-        this.modalStore.state.entityFormData,
-        this.site?.id,
-      );
+      const params = this.adapter.prepareApiParams(this.modalStore.state.entityFormData);
 
       // Use adapter to submit the request
       this.adapter.submitRequest(params).then((response: DuplicateRequestResponse) => {
@@ -262,16 +229,11 @@ export default defineComponent({
       // Use adapter for validation
       const validationResult = this.adapter.validateFormFields(
         this.modalStore.state.entityFormData,
-        this.site?.id,
       );
 
       if (!validationResult.isValid && validationResult.errorMessages.length > 0) {
         this.duplicationErrors = validationResult.errorMessages;
       }
-    },
-    onSiteChange() {
-      // Reset flag since the data has changed since validation
-      this.isValidated = false;
     },
     emitFailureAndSetErrorMessage(response: null|DuplicateRequestResponse = null) {
       let tempResponseObject = response;

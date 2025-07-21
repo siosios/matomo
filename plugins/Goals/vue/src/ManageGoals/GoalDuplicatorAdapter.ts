@@ -18,11 +18,10 @@ import type { DuplicateRequestResponse } from 'CoreHome';
 export class GoalDuplicatorAdapter implements EntityDuplicatorAdapter {
   validateFormFields(
     formValues: Record<string, unknown>,
-    idSite?: number|string,
   ): ValidationResult {
     const errorMessages: string[] = [];
 
-    if (!idSite) {
+    if (!formValues?.idSite) {
       errorMessages.push(translate('General_Required', 'idSite'));
     }
 
@@ -39,17 +38,20 @@ export class GoalDuplicatorAdapter implements EntityDuplicatorAdapter {
 
   prepareApiParams(
     formValues: Record<string, unknown>,
-    idSite?: number|string,
   ): QueryParameters {
     // idSite is validated with validateFormFields
-    const idDestinationSites = [idSite as number|string];
+    const idDestinationSites = [formValues.idSite as number|string];
+
+    // Remove idSite from the request data as it's passed separately
+    const requestData = { ...formValues };
+    delete requestData.idSite;
 
     return {
       module: 'CoreHome',
       action: 'duplicateEntity',
       idSite: Matomo.idSite || MatomoUrl.parsed.value.idSite,
       entityTypeName: 'goal',
-      requestData: formValues,
+      requestData,
       idDestinationSites,
     };
   }

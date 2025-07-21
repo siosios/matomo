@@ -206,7 +206,7 @@ external_CoreHome_["Matomo"].on('Matomo.processDynamicHtml', $element => {
 // EXTERNAL MODULE: external {"commonjs":"vue","commonjs2":"vue","root":"Vue"}
 var external_commonjs_vue_commonjs2_vue_root_Vue_ = __webpack_require__("8bbf");
 
-// CONCATENATED MODULE: ./node_modules/@vue/cli-plugin-babel/node_modules/cache-loader/dist/cjs.js??ref--13-0!./node_modules/@vue/cli-plugin-babel/node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib!./node_modules/@vue/cli-service/node_modules/vue-loader-v16/dist/templateLoader.js??ref--6!./node_modules/@vue/cli-service/node_modules/cache-loader/dist/cjs.js??ref--1-0!./node_modules/@vue/cli-service/node_modules/vue-loader-v16/dist??ref--1-1!./plugins/Goals/vue/src/ManageGoals/ManageGoals.vue?vue&type=template&id=23f598c0
+// CONCATENATED MODULE: ./node_modules/@vue/cli-plugin-babel/node_modules/cache-loader/dist/cjs.js??ref--13-0!./node_modules/@vue/cli-plugin-babel/node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib!./node_modules/@vue/cli-service/node_modules/vue-loader-v16/dist/templateLoader.js??ref--6!./node_modules/@vue/cli-service/node_modules/cache-loader/dist/cjs.js??ref--1-0!./node_modules/@vue/cli-service/node_modules/vue-loader-v16/dist??ref--1-1!./plugins/Goals/vue/src/ManageGoals/ManageGoals.vue?vue&type=template&id=2b09d628
 
 const _hoisted_1 = {
   class: "manageGoals"
@@ -538,9 +538,22 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     adapter: _ctx.goalDuplicatorAdapter,
     onDuplicationSuccessful: _ctx.handleSuccess,
     onDuplicationFailed: _ctx.handleFailure
-  }, null, 8, ["modalStore", "adapter", "onDuplicationSuccessful", "onDuplicationFailed"])], 64);
+  }, {
+    default: Object(external_commonjs_vue_commonjs2_vue_root_Vue_["withCtx"])(() => [Object(external_commonjs_vue_commonjs2_vue_root_Vue_["createVNode"])(_component_Field, {
+      uicontrol: "site",
+      name: "siteSelector",
+      title: _ctx.translate('CoreHome_ChooseWebsite'),
+      modelValue: _ctx.goalDuplicationSite,
+      "onUpdate:modelValue": _cache[15] || (_cache[15] = $event => _ctx.goalDuplicationSite = $event),
+      "ui-control-attributes": {
+        sitesWithAtLeastWriteAccess: true,
+        siteTypesToExclude: ['rollup']
+      }
+    }, null, 8, ["title", "modelValue"])]),
+    _: 1
+  }, 8, ["modalStore", "adapter", "onDuplicationSuccessful", "onDuplicationFailed"])], 64);
 }
-// CONCATENATED MODULE: ./plugins/Goals/vue/src/ManageGoals/ManageGoals.vue?vue&type=template&id=23f598c0
+// CONCATENATED MODULE: ./plugins/Goals/vue/src/ManageGoals/ManageGoals.vue?vue&type=template&id=2b09d628
 
 // EXTERNAL MODULE: external "CorePluginsAdmin"
 var external_CorePluginsAdmin_ = __webpack_require__("a5a2");
@@ -573,9 +586,9 @@ class ManageGoals_store_ManageGoalsStore {
  */
 
 class GoalDuplicatorAdapter_GoalDuplicatorAdapter {
-  validateFormFields(formValues, idSite) {
+  validateFormFields(formValues) {
     const errorMessages = [];
-    if (!idSite) {
+    if (!(formValues !== null && formValues !== void 0 && formValues.idSite)) {
       errorMessages.push(Object(external_CoreHome_["translate"])('General_Required', 'idSite'));
     }
     // Check if idGoal is present
@@ -587,15 +600,18 @@ class GoalDuplicatorAdapter_GoalDuplicatorAdapter {
       isValid: errorMessages.length === 0
     };
   }
-  prepareApiParams(formValues, idSite) {
+  prepareApiParams(formValues) {
     // idSite is validated with validateFormFields
-    const idDestinationSites = [idSite];
+    const idDestinationSites = [formValues.idSite];
+    // Remove idSite from the request data as it's passed separately
+    const requestData = Object.assign({}, formValues);
+    delete requestData.idSite;
     return {
       module: 'CoreHome',
       action: 'duplicateEntity',
       idSite: external_CoreHome_["Matomo"].idSite || external_CoreHome_["MatomoUrl"].parsed.value.idSite,
       entityTypeName: 'goal',
-      requestData: formValues,
+      requestData,
       idDestinationSites
     };
   }
@@ -666,7 +682,8 @@ function ambiguousBoolToInt(n) {
       showDuplicatorAction: true,
       enableDuplicatorAction: true,
       entityDuplicatorStore: typeof buildEntityDuplicatorStore !== 'undefined' ? buildEntityDuplicatorStore('goal', 'General_Goal') : undefined,
-      goalDuplicatorAdapter: new GoalDuplicatorAdapter_GoalDuplicatorAdapter()
+      goalDuplicatorAdapter: new GoalDuplicatorAdapter_GoalDuplicatorAdapter(),
+      goalDuplicationSite: null
     };
   },
   components: {
@@ -696,6 +713,21 @@ function ambiguousBoolToInt(n) {
       this.editGoal(this.showGoal);
     } else {
       this.showListOfReports();
+    }
+  },
+  watch: {
+    'entityDuplicatorStore.state.isModalVisible': {
+      handler(newValue) {
+        if (newValue) {
+          // Reset site selection when modal opens
+          this.goalDuplicationSite = null;
+        }
+      }
+    },
+    goalDuplicationSite(newValue) {
+      if (this.entityDuplicatorStore && newValue) {
+        this.entityDuplicatorStore.state.entityFormData.idSite = newValue.id;
+      }
     }
   },
   methods: {

@@ -385,7 +385,18 @@
     :adapter="goalDuplicatorAdapter"
     @duplicationSuccessful="handleSuccess"
     @duplicationFailed="handleFailure"
-  />
+  >
+    <Field
+      uicontrol="site"
+      name="siteSelector"
+      :title="translate('CoreHome_ChooseWebsite')"
+      v-model="goalDuplicationSite"
+      :ui-control-attributes="{
+        sitesWithAtLeastWriteAccess: true,
+        siteTypesToExclude: ['rollup'],
+      }"
+    />
+  </EntityDuplicatorModal>
 </template>
 
 <script lang="ts">
@@ -446,6 +457,7 @@ interface ManageGoalsState {
   enableDuplicatorAction: boolean;
   entityDuplicatorStore?: EntityDuplicatorStore;
   goalDuplicatorAdapter: GoalDuplicatorAdapter;
+  goalDuplicationSite: { id: number|string; name: string }|null;
 }
 
 function ambiguousBoolToInt(n: string|number|boolean): 1|0 {
@@ -493,6 +505,7 @@ export default defineComponent({
         ? buildEntityDuplicatorStore('goal', 'General_Goal')
         : undefined,
       goalDuplicatorAdapter: new GoalDuplicatorAdapter(),
+      goalDuplicationSite: null,
     };
   },
   components: {
@@ -523,6 +536,21 @@ export default defineComponent({
     } else {
       this.showListOfReports();
     }
+  },
+  watch: {
+    'entityDuplicatorStore.state.isModalVisible': {
+      handler(newValue) {
+        if (newValue) {
+          // Reset site selection when modal opens
+          this.goalDuplicationSite = null;
+        }
+      },
+    },
+    goalDuplicationSite(newValue) {
+      if (this.entityDuplicatorStore && newValue) {
+        this.entityDuplicatorStore.state.entityFormData.idSite = newValue.id;
+      }
+    },
   },
   methods: {
     scrollToTop() {

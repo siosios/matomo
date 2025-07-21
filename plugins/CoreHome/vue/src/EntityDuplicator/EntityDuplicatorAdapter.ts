@@ -16,12 +16,12 @@ export interface EntityDuplicatorAdapter {
   /**
    * Validates the form fields before submission
    */
-  validateFormFields(formValues: Record<string, unknown>, siteId?: number|string): ValidationResult;
+  validateFormFields(formValues: Record<string, unknown>): ValidationResult;
 
   /**
    * Prepares the API parameters for the duplication request
    */
-  prepareApiParams(formValues: Record<string, unknown>, siteId?: number|string): QueryParameters;
+  prepareApiParams(formValues: Record<string, unknown>): QueryParameters;
 
   /**
    * Submits the duplication request to the server
