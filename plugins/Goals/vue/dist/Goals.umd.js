@@ -608,11 +608,102 @@ class GoalDuplicatorAdapter_GoalDuplicatorAdapter {
     };
   }
   async submitRequest(params) {
-    return external_CoreHome_["AjaxHelper"].post({
-      module: 'API',
-      method: 'Goals.duplicateGoal',
-      format: 'json'
-    }, params);
+    const idSite = params.idSite;
+    const idGoal = params.idGoal;
+    const idDestinationSites = params.idDestinationSites;
+    try {
+      const sourceGoal = await external_CoreHome_["AjaxHelper"].fetch({
+        method: 'Goals.getGoal',
+        idSite,
+        idGoal
+      });
+      if (!sourceGoal || sourceGoal.deleted !== '0') {
+        return {
+          success: false,
+          message: 'Invalid goal'
+        };
+      }
+      const idSitesFailed = [];
+      const idSiteGoals = {};
+      const results = await Promise.all(idDestinationSites.map(async idDestinationSite => {
+        try {
+          let newName = sourceGoal.name;
+          const existingGoals = await external_CoreHome_["AjaxHelper"].fetch({
+            method: 'Goals.getGoals',
+            idSite: idDestinationSite
+          });
+          if (existingGoals && Object.keys(existingGoals).length > 0) {
+            const goalNames = Object.values(existingGoals).map(g => g.name);
+            newName = this.getUniqueNameComparedToList(newName, goalNames, 50);
+          }
+          const newGoalId = await external_CoreHome_["AjaxHelper"].fetch({
+            method: 'Goals.addGoal',
+            idSite: idDestinationSite,
+            name: newName,
+            matchAttribute: sourceGoal.match_attribute,
+            pattern: sourceGoal.pattern || '',
+            patternType: sourceGoal.pattern_type || '',
+            caseSensitive: sourceGoal.case_sensitive ? 1 : 0,
+            revenue: sourceGoal.revenue || 0,
+            allowMultipleConversionsPerVisit: sourceGoal.allow_multiple ? 1 : 0,
+            description: sourceGoal.description || '',
+            useEventValueAsRevenue: sourceGoal.event_value_as_revenue ? 1 : 0
+          });
+          if (!newGoalId || newGoalId < 1) {
+            return {
+              success: false,
+              idDestinationSite
+            };
+          }
+          return {
+            success: true,
+            idDestinationSite,
+            newGoalId
+          };
+        } catch (e) {
+          return {
+            success: false,
+            idDestinationSite
+          };
+        }
+      }));
+      results.forEach(result => {
+        if (result.success && result.newGoalId) {
+          idSiteGoals[result.idDestinationSite] = result.newGoalId;
+        } else {
+          idSitesFailed.push(result.idDestinationSite);
+        }
+      });
+      const response = {};
+      if (idSitesFailed.length > 0) {
+        response.success = false;
+        response.message = `Goal duplication partially failed for: ${idSitesFailed.join(', ')}`;
+      } else {
+        response.success = true;
+        response.message = 'Goal duplication successful';
+      }
+      return response;
+    } catch (error) {
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'An error occurred'
+      };
+    }
+  }
+  getUniqueNameComparedToList(name, existingNames, maxLength) {
+    let newName = name;
+    let counter = 1;
+    while (existingNames.includes(newName)) {
+      const suffix = ` (${counter})`;
+      const baseNameMaxLength = maxLength - suffix.length;
+      let baseName = name;
+      if (baseName.length > baseNameMaxLength) {
+        baseName = baseName.substring(0, baseNameMaxLength);
+      }
+      newName = baseName + suffix;
+      counter += 1;
+    }
+    return newName;
   }
 }
 // CONCATENATED MODULE: ./node_modules/@vue/cli-plugin-typescript/node_modules/cache-loader/dist/cjs.js??ref--15-0!./node_modules/babel-loader/lib!./node_modules/@vue/cli-plugin-typescript/node_modules/ts-loader??ref--15-2!./node_modules/@vue/cli-service/node_modules/cache-loader/dist/cjs.js??ref--1-0!./node_modules/@vue/cli-service/node_modules/vue-loader-v16/dist??ref--1-1!./plugins/Goals/vue/src/ManageGoals/ManageGoals.vue?vue&type=script&lang=ts
