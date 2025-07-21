@@ -188,7 +188,7 @@ export default defineComponent({
       // Use adapter to submit the request
       this.adapter.submitRequest(params).then((response: DuplicateRequestResponse) => {
         // If the response was invalid or unsuccessful, emit the failure and show an error message
-        if (!response || !response.isDuplicationSuccessful) {
+        if (!response || !response.success) {
           this.emitFailureAndSetErrorMessage(response);
           return;
         }
@@ -238,18 +238,18 @@ export default defineComponent({
       // If no response object is set, create one with a generic error message
       if (!tempResponseObject) {
         tempResponseObject = {
-          isDuplicationSuccessful: false,
-          errorMessage: translate('General_ErrorRequest', '', ''),
+          success: false,
+          message: translate('General_ErrorRequest', '', ''),
         };
       }
 
       // If the error message wasn't set, set it to a generic error message
-      if (!tempResponseObject.errorMessage || tempResponseObject.errorMessage.length === 0) {
-        tempResponseObject.errorMessage = translate('General_ErrorRequest', '', '');
+      if (!tempResponseObject.message || tempResponseObject.message.length === 0) {
+        tempResponseObject.message = translate('General_ErrorRequest', '', '');
       }
 
       this.duplicationErrors = [];
-      this.duplicationErrors.push(tempResponseObject.errorMessage);
+      this.duplicationErrors.push(tempResponseObject.message);
       this.$emit('duplicationFailed', tempResponseObject);
     },
   },

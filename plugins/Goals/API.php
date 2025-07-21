@@ -33,6 +33,7 @@ use Piwik\Tracker\GoalManager;
 use Piwik\Plugins\VisitFrequency\API as VisitFrequencyAPI;
 use Piwik\Validators\Regex;
 use Piwik\Validators\WhitelistedValue;
+use Piwik\Plugins\CoreHome\EntityDuplicator\EntityDuplicatorHelper;
 
 /**
  * Goals API lets you Manage existing goals, via "updateGoal" and "deleteGoal", create new Goals via "addGoal",
@@ -369,6 +370,85 @@ class API extends \Piwik\Plugin\API
         $this->getGoalsInfoStaticCache()->delete(self::getCacheId($idSite));
 
         Cache::regenerateCacheWebsiteAttributes($idSite);
+    }
+
+    /**
+     * Duplicates a goal to one or more destination sites.
+     *
+     * @param int $idSite The source site ID
+     * @param int $idGoal The goal ID to duplicate
+     * @param array|string $idDestinationSites Array or comma-separated list of destination site IDs
+     * @return array Response containing success status and duplicated goal IDs
+     * @throws Exception
+     */
+    public function duplicateGoal(int $idSite, int $idGoal, $idDestinationSites)
+    {
+        if (!is_array($idDestinationSites)) {
+            $idDestinationSites = Site::getIdSitesFromIdSitesString($idDestinationSites);
+        }
+
+        Piwik::checkUserHasWriteAccess(array_unique(array_merge([$idSite], $idDestinationSites)));
+
+        $goal = $this->getGoal($idSite, $idGoal);
+
+        if (empty($goal) || !empty($goal['deleted'])) {
+            throw new Exception('Invalid goal');
+        }
+
+        $idSitesFailed = [];
+        $idSiteGoals = [];
+
+        foreach ($idDestinationSites as $idDestinationSite) {
+            try {
+                $newName = $goal['name'];
+
+                // Get existing goals for the destination site to ensure unique naming
+                $existingGoals = $this->getGoals($idDestinationSite);
+
+                if (!empty($existingGoals)) {
+                    $goalNames = array_column($existingGoals, 'name');
+                    $newName = EntityDuplicatorHelper::getUniqueNameComparedToList($newName, $goalNames, 50);
+                }
+
+                // Create the new goal
+                $newGoalId = $this->addGoal(
+                    $idDestinationSite,
+                    $newName,
+                    $goal['match_attribute'],
+                    $goal['pattern'] ?? '',
+                    $goal['pattern_type'] ?? '',
+                    $goal['case_sensitive'] ?? false,
+                    $goal['revenue'] ?? false,
+                    $goal['allow_multiple'] ?? false,
+                    $goal['description'] ?? '',
+                    $goal['event_value_as_revenue'] ?? false
+                );
+
+                if (!is_numeric($newGoalId) || (int) $newGoalId < 1) {
+                    $idSitesFailed[] = $idDestinationSite;
+                    continue;
+                }
+
+                $idSiteGoals[$idDestinationSite] = $newGoalId;
+            } catch (\Throwable $e) {
+                $idSitesFailed[] = $idDestinationSite;
+            }
+        }
+
+        $response = [
+            'idSite' => $idSite,
+            'idGoal' => $idGoal,
+        ];
+
+        if (!empty($idSitesFailed)) {
+            $response['success'] = false;
+            $response['message'] = 'Goal duplication partially failed for: ' . implode(', ', $idSitesFailed);
+        } else {
+            $response['success'] = true;
+            $response['message'] = 'Goal duplication successful';
+        }
+
+        return $response;
     }
 
     /**

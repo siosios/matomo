@@ -6,9 +6,6 @@
  */
 
 export interface DuplicateRequestResponse {
-  isDuplicationSuccessful?: boolean;
-  successMessage?: string;
-  responseData?: Record<string, unknown>;
-  errorMessage?: string;
-  errorCode?: number;
+  success?: boolean;
+  message?: string;
 }

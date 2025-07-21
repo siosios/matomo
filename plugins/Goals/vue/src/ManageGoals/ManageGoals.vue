@@ -772,15 +772,9 @@ export default defineComponent({
     },
     handleSuccess(response: DuplicateRequestResponse) {
       setTimeout(() => {
-        const message = (
-          response.isDuplicationSuccessful
-            ? response.successMessage
-            : response.errorMessage
-        ) as string;
-
         const notificationInstanceId = NotificationsStore.show({
-          message,
-          context: response.isDuplicationSuccessful ? 'success' : 'error',
+          message: response.message as string,
+          context: response.success ? 'success' : 'error',
           type: 'toast',
           id: 'goalDuplicationResult',
         });

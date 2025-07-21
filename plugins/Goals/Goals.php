@@ -19,9 +19,6 @@ use Piwik\Piwik;
 use Piwik\Plugin\ArchivedMetric;
 use Piwik\Plugin\ComputedMetric;
 use Piwik\Plugin\ReportsProvider;
-use Piwik\Plugins\CoreHome\EntityDuplicator\DuplicateRequest;
-use Piwik\Plugins\CoreHome\EntityDuplicator\DuplicateRequestResponse;
-use Piwik\Plugins\CoreHome\EntityDuplicator\EntityDuplicatorHelper;
 use Piwik\Plugins\CoreHome\SystemSummary;
 use Piwik\Plugins\Goals\RecordBuilders\ProductRecord;
 use Piwik\Tracker\GoalManager;
@@ -114,7 +111,6 @@ class Goals extends \Piwik\Plugin
             'Metric.addComputedMetrics'              => 'addComputedMetrics',
             'System.addSystemSummaryItems'           => 'addSystemSummaryItems',
             'Archiver.addRecordBuilders'             => 'addRecordBuilders',
-            'CoreHome.processDuplicationRequest'     => 'duplicateGoal',
         );
         return $hooks;
     }
@@ -534,98 +530,5 @@ class Goals extends \Piwik\Plugin
         $translationKeys[] = 'General_Yes';
         $translationKeys[] = 'General_No';
         $translationKeys[] = 'General_OrCancel';
-    }
-
-    public function duplicateGoal(
-        DuplicateRequest $duplicateRequest,
-        DuplicateRequestResponse &$duplicateResponse
-    ): void {
-        if ($duplicateRequest->getEntityTypeName() !== 'goal') {
-            return;
-        }
-
-        $goal = null;
-
-        try {
-            $goal = Request::processRequest('Goals.getGoal', [
-                'idSite' => $duplicateRequest->getIdSite(),
-                'idGoal' => $duplicateRequest->getRequestData()['idGoal'],
-            ], []);
-        } catch (\Throwable $e) {
-            // intentionally left blank
-        }
-
-        if (empty($goal['name']) || !empty($goal['deleted'])) {
-            $duplicateResponse->setIsDuplicationSuccessful(false);
-            $duplicateResponse->setErrorMessage('Invalid goal');
-            $duplicateResponse->setResponseData([
-                'idSite' => $duplicateRequest->getIdSite(),
-                'idDestinationSites' => $duplicateRequest->getIdDestinationSites(),
-                'requestData' => $duplicateRequest->getRequestData(),
-            ]);
-
-            return;
-        }
-
-        $addGoalParams = [
-            'description' => $goal['description'],
-            'matchAttribute' => $goal['match_attribute'],
-            'pattern' => $goal['pattern'],
-            'patternType' => $goal['pattern_type'],
-            'caseSensitive' => $goal['case_sensitive'],
-            'allowMultipleConversionsPerVisit' => $goal['allow_multiple'],
-            'revenue' => $goal['revenue'],
-            'useEventValueAsRevenue' => $goal['event_value_as_revenue'],
-        ];
-
-        $idSitesFailed = [];
-        $idSiteGoals = [];
-
-        foreach ($duplicateRequest->getIdDestinationSites() as $idDestinationSite) {
-            try {
-                $newName = $goal['name'];
-                $goals = Request::processRequest('Goals.getGoals', ['idSite' => $idDestinationSite], []);
-
-                if (is_array($goals) && [] !== $goals) {
-                    $goalNames = array_column($goals, 'name');
-                    $newName = EntityDuplicatorHelper::getUniqueNameComparedToList($newName, $goalNames, 50);
-                }
-
-                $addGoalParams['idSite'] = $idDestinationSite;
-                $addGoalParams['name'] = $newName;
-                $response = Request::processRequest('Goals.addGoal', $addGoalParams);
-
-                if (!is_numeric($response) || (int) $response < 1) {
-                    $idSitesFailed[] = $idDestinationSite;
-                    continue;
-                }
-
-                $idSiteGoals[] = $response;
-            } catch (\Throwable $e) {
-                $idSitesFailed[] = $idDestinationSite;
-            }
-        }
-
-        if ([] !== $idSitesFailed) {
-            $duplicateResponse->setIsDuplicationSuccessful(false);
-            $duplicateResponse->setErrorMessage('Goal duplication partially failed for: ' . implode(', ', $idSitesFailed));
-            $duplicateResponse->setResponseData([
-                'idSite' => $duplicateRequest->getIdSite(),
-                'idDestinationSites' => $duplicateRequest->getIdDestinationSites(),
-                'newIds' => $idSiteGoals,
-                'requestData' => $duplicateRequest->getRequestData(),
-            ]);
-
-            return;
-        }
-
-        $duplicateResponse->setIsDuplicationSuccessful(true);
-        $duplicateResponse->setSuccessMessage('Goal duplication successful');
-        $duplicateResponse->setResponseData([
-            'idSite' => $duplicateRequest->getIdSite(),
-            'idDestinationSites' => $duplicateRequest->getIdDestinationSites(),
-            'newIds' => $idSiteGoals,
-            'requestData' => $duplicateRequest->getRequestData(),
-        ]);
     }
 }

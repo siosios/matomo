@@ -39,36 +39,21 @@ export class GoalDuplicatorAdapter implements EntityDuplicatorAdapter {
   prepareApiParams(
     formValues: Record<string, unknown>,
   ): QueryParameters {
-    // idSite is validated with validateFormFields
-    const idDestinationSites = [formValues.idSite as number|string];
-
-    // Remove idSite from the request data as it's passed separately
-    const requestData = { ...formValues };
-    delete requestData.idSite;
-
     return {
-      module: 'CoreHome',
-      action: 'duplicateEntity',
       idSite: Matomo.idSite || MatomoUrl.parsed.value.idSite,
-      entityTypeName: 'goal',
-      requestData,
-      idDestinationSites,
+      idGoal: formValues.idGoal as number|string,
+      idDestinationSites: [formValues.idSite as number|string],
     };
   }
 
   async submitRequest(params: QueryParameters): Promise<DuplicateRequestResponse> {
-    const ajax = new AjaxHelper();
-
-    // Remove the unnecessary default parameters
-    ajax.removeDefaultParameter('date');
-    ajax.removeDefaultParameter('period');
-    ajax.removeDefaultParameter('segment');
-
-    // Include token in POST body for security
-    ajax.withTokenInUrl();
-    ajax.addParams(params, 'POST');
-    ajax.setFormat('json');
-
-    return ajax.send();
+    return AjaxHelper.post<DuplicateRequestResponse>(
+      {
+        module: 'API',
+        method: 'Goals.duplicateGoal',
+        format: 'json',
+      },
+      params,
+    );
   }
 }

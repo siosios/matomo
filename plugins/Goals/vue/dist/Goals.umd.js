@@ -206,7 +206,7 @@ external_CoreHome_["Matomo"].on('Matomo.processDynamicHtml', $element => {
 // EXTERNAL MODULE: external {"commonjs":"vue","commonjs2":"vue","root":"Vue"}
 var external_commonjs_vue_commonjs2_vue_root_Vue_ = __webpack_require__("8bbf");
 
-// CONCATENATED MODULE: ./node_modules/@vue/cli-plugin-babel/node_modules/cache-loader/dist/cjs.js??ref--13-0!./node_modules/@vue/cli-plugin-babel/node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib!./node_modules/@vue/cli-service/node_modules/vue-loader-v16/dist/templateLoader.js??ref--6!./node_modules/@vue/cli-service/node_modules/cache-loader/dist/cjs.js??ref--1-0!./node_modules/@vue/cli-service/node_modules/vue-loader-v16/dist??ref--1-1!./plugins/Goals/vue/src/ManageGoals/ManageGoals.vue?vue&type=template&id=2b09d628
+// CONCATENATED MODULE: ./node_modules/@vue/cli-plugin-babel/node_modules/cache-loader/dist/cjs.js??ref--13-0!./node_modules/@vue/cli-plugin-babel/node_modules/thread-loader/dist/cjs.js!./node_modules/babel-loader/lib!./node_modules/@vue/cli-service/node_modules/vue-loader-v16/dist/templateLoader.js??ref--6!./node_modules/@vue/cli-service/node_modules/cache-loader/dist/cjs.js??ref--1-0!./node_modules/@vue/cli-service/node_modules/vue-loader-v16/dist??ref--1-1!./plugins/Goals/vue/src/ManageGoals/ManageGoals.vue?vue&type=template&id=9c5c1e8e
 
 const _hoisted_1 = {
   class: "manageGoals"
@@ -553,7 +553,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
     _: 1
   }, 8, ["modalStore", "adapter", "onDuplicationSuccessful", "onDuplicationFailed"])], 64);
 }
-// CONCATENATED MODULE: ./plugins/Goals/vue/src/ManageGoals/ManageGoals.vue?vue&type=template&id=2b09d628
+// CONCATENATED MODULE: ./plugins/Goals/vue/src/ManageGoals/ManageGoals.vue?vue&type=template&id=9c5c1e8e
 
 // EXTERNAL MODULE: external "CorePluginsAdmin"
 var external_CorePluginsAdmin_ = __webpack_require__("a5a2");
@@ -601,31 +601,18 @@ class GoalDuplicatorAdapter_GoalDuplicatorAdapter {
     };
   }
   prepareApiParams(formValues) {
-    // idSite is validated with validateFormFields
-    const idDestinationSites = [formValues.idSite];
-    // Remove idSite from the request data as it's passed separately
-    const requestData = Object.assign({}, formValues);
-    delete requestData.idSite;
     return {
-      module: 'CoreHome',
-      action: 'duplicateEntity',
       idSite: external_CoreHome_["Matomo"].idSite || external_CoreHome_["MatomoUrl"].parsed.value.idSite,
-      entityTypeName: 'goal',
-      requestData,
-      idDestinationSites
+      idGoal: formValues.idGoal,
+      idDestinationSites: [formValues.idSite]
     };
   }
   async submitRequest(params) {
-    const ajax = new external_CoreHome_["AjaxHelper"]();
-    // Remove the unnecessary default parameters
-    ajax.removeDefaultParameter('date');
-    ajax.removeDefaultParameter('period');
-    ajax.removeDefaultParameter('segment');
-    // Include token in POST body for security
-    ajax.withTokenInUrl();
-    ajax.addParams(params, 'POST');
-    ajax.setFormat('json');
-    return ajax.send();
+    return external_CoreHome_["AjaxHelper"].post({
+      module: 'API',
+      method: 'Goals.duplicateGoal',
+      format: 'json'
+    }, params);
   }
 }
 // CONCATENATED MODULE: ./node_modules/@vue/cli-plugin-typescript/node_modules/cache-loader/dist/cjs.js??ref--15-0!./node_modules/babel-loader/lib!./node_modules/@vue/cli-plugin-typescript/node_modules/ts-loader??ref--15-2!./node_modules/@vue/cli-service/node_modules/cache-loader/dist/cjs.js??ref--1-0!./node_modules/@vue/cli-service/node_modules/vue-loader-v16/dist??ref--1-1!./plugins/Goals/vue/src/ManageGoals/ManageGoals.vue?vue&type=script&lang=ts
@@ -895,10 +882,9 @@ function ambiguousBoolToInt(n) {
     },
     handleSuccess(response) {
       setTimeout(() => {
-        const message = response.isDuplicationSuccessful ? response.successMessage : response.errorMessage;
         const notificationInstanceId = external_CoreHome_["NotificationsStore"].show({
-          message,
-          context: response.isDuplicationSuccessful ? 'success' : 'error',
+          message: response.message,
+          context: response.success ? 'success' : 'error',
           type: 'toast',
           id: 'goalDuplicationResult'
         });
