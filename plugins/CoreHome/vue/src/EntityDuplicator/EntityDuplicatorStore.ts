@@ -14,10 +14,6 @@ interface EntityDuplicatorState {
    */
   isModalVisible: boolean
   /**
-   * Whether the watching is suppressed. This allows updating the form data without validation.
-   */
-  isWatchSuppressed: boolean
-  /**
    * Form data that needs to be included in the request sent to the server but won't change between
    * requests. This could be a parent ID (e.g. ID of the container when duplicating MTM tags).
    */
@@ -42,7 +38,6 @@ interface EntityDuplicatorState {
 export class EntityDuplicatorStore {
   state: EntityDuplicatorState = reactive({
     isModalVisible: false,
-    isWatchSuppressed: false,
     commonFormData: {},
     entityFormData: {},
     duplicateEntityType: '',
@@ -77,16 +72,10 @@ export class EntityDuplicatorStore {
   }
 
   resetFormData(): void {
-    this.state.isWatchSuppressed = true;
-
     // Remove all properties (preserves the original object reference)
     Object.keys(this.state.entityFormData).forEach((key) => {
       delete this.state.entityFormData[key];
     });
-  }
-
-  disableWatchSuppression(): void {
-    this.state.isWatchSuppressed = false;
   }
 
   /**
