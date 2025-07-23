@@ -58,7 +58,7 @@ class PasswordStrength
                 'ruleText' => Piwik::translate('General_PasswordStrengthValidationNumber')
             ],
             [
-                'validationRegex' => '/^.*[!@#$%^&*(){}[\]\'\`\\\|\"\~].*$/',
+                'validationRegex' => '/^.*[!\"#$%&\\\'(\\\\)*+,\-.\/:;<=>?@[\\]^_\`{\|}\~].*$/',
                 'ruleText' => Piwik::translate('General_PasswordStrengthValidationSpecialChar')
             ],
         ];
@@ -85,5 +85,28 @@ class PasswordStrength
         }
 
         return $brokenRules;
+    }
+
+    public function formatValidationFailedMessage(array $brokenRules): string
+    {
+        if (!$this->enabled || empty($brokenRules)) {
+            return '';
+        }
+
+        $concatenatedRules = implode(', ', array_map('lcfirst', $brokenRules));
+
+        return Piwik::translate('General_PasswordStrengthValidationFailed', $concatenatedRules);
+    }
+
+    public function getRulesAsHtmlList(): string
+    {
+        $list = '';
+        $rules = $this->getRules();
+        foreach ($rules as $rule) {
+            $ruleText = $rule['ruleText'];
+            $list .= "<li>$ruleText</li>";
+        }
+
+        return "<ul class='browser-default'>$list</ul>";
     }
 }
