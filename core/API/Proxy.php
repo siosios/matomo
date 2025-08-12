@@ -153,19 +153,15 @@ class Proxy
      * @return mixed|null
      * @throws Exception|\Piwik\NoAccessException
      */
-    public function call($className, $methodName, $parametersRequest)
+    public function call(string $className, string $methodName, array $parametersRequest, ?APIVersion $apiVersion = null)
     {
         // Temporarily sets the Request array to this API call context
-        return Context::executeWithQueryParameters($parametersRequest, function () use ($className, $methodName, $parametersRequest) {
+        return Context::executeWithQueryParameters($parametersRequest, function () use ($className, $methodName, $parametersRequest, $apiVersion) {
             $this->registerClass($className);
 
             $request = new \Piwik\Request($parametersRequest);
 
-            /**
-             * instantiate the object
-             * @var API $object
-             */
-            $object = $className::getInstance();
+            $object = $this->getApiClass($className, $apiVersion);
 
             // check method exists
             $this->checkMethodExists($className, $methodName);
@@ -345,6 +341,16 @@ class Proxy
 
             return $returnedValue;
         });
+    }
+
+    public function getApiClass(string $className, ?APIVersion $apiVersion): API
+    {
+        if (null === $apiVersion) {
+            return $className::getInstance();
+        }
+
+        $versionedClassname = $apiVersion->getClassString($className);
+        return $versionedClassname::getInstance();
     }
 
     /**

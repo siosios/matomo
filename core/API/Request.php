@@ -10,6 +10,7 @@
 namespace Piwik\API;
 
 use Exception;
+use InvalidArgumentException;
 use Piwik\Access;
 use Piwik\Request\AuthenticationToken;
 use Piwik\Cache;
@@ -332,6 +333,23 @@ class Request
     public static function getClassNameAPI($plugin)
     {
         return sprintf('\Piwik\Plugins\%s\API', $plugin);
+    }
+
+    // TODO - remove this, use Proxy->getModuleNameFromClassName, and check if we need to upgrade it to work with versions
+    public static function getPluginNameFromClassName(string $className): string
+    {
+        // Remove leading backslash if present
+        $className = ltrim($className, '\\');
+
+        // Split into namespace parts
+        $parts = explode('\\', $className);
+
+        // Expecting: ["Piwik", "Plugins", "{PluginName}", "API"]
+        if (count($parts) === 4 && $parts[0] === 'Piwik' && $parts[1] === 'Plugins' && $parts[3] === 'API') {
+            return $parts[2];
+        }
+
+        throw new InvalidArgumentException("Invalid API class name: $className");
     }
 
     /**
